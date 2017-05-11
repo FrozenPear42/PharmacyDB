@@ -1,4 +1,4 @@
-package com.bugfullabs.pharmacydb;
+package com.bugfullabs.pharmacydb.main;
 
 import com.bugfullabs.pharmacydb.model.Contact;
 import com.bugfullabs.pharmacydb.model.Employee;
@@ -11,26 +11,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class DatabaseConnector {
-    private static final String SQL_SELECT_EMPLOYEES =
-            "SELECT\n" +
-                    "  employeeID,\n" +
-                    "  name,\n" +
-                    "  surname,\n" +
-                    "  salary,\n" +
-                    "  Contact.contactID,\n" +
-                    "  Contact.email,\n" +
-                    "  Contact.phoneNumber,\n" +
-                    "  Contact.street,\n" +
-                    "  Contact.city,\n" +
-                    "  Contact.zipCode\n" +
-                    "FROM\n" +
-                    "  Employee\n" +
-                    "  JOIN Contact ON Employee.Contact_contactID = Contact.contactID;";
-
-    private static final String SQL_SELECT_MEDICATIONS = "SELECT * FROM Medication JOIN Stock ON Medication.medicationID = Stock.Medication_medicationID;";
-    private static final String SQL_CREATE_DB = "";
-    private static final String SQL_SELECT_TRANSACTIONS = "SELECT * FROM Transaction";
-
 
     private static Logger LOG = Logger.getAnonymousLogger();
     private Connection mConnection;
@@ -41,21 +21,13 @@ public class DatabaseConnector {
         LOG.info("created connection to " + uri);
     }
 
-
-    public void createDatabase() {
-        try {
-            Statement statement = mConnection.createStatement();
-            statement.execute(SQL_CREATE_DB);
-        } catch (Exception e) {
-            LOG.info("Something went wrong...");
-        }
-    }
-
     public List<Employee> getEmployees() {
         ArrayList<Employee> list = new ArrayList<>();
         try {
             Statement statement = mConnection.createStatement();
-            statement.execute(SQL_SELECT_EMPLOYEES);
+            statement.execute("SELECT employeeID, name, surname, salary,\n" +
+                    "Contact.contactID, Contact.email, Contact.phoneNumber, Contact.street, Contact.city, Contact.zipCode\n" +
+                    "FROM Employee JOIN Contact ON Employee.Contact_contactID = Contact.contactID;");
             ResultSet result = statement.getResultSet();
             while (result.next()) {
                 int employeeID = result.getInt("employeeID");
@@ -82,15 +54,11 @@ public class DatabaseConnector {
         return null;
     }
 
-    public void updateMedication(Medication medication) {
-
-    }
-
     public List<Medication> getMedications() {
         ArrayList<Medication> list = new ArrayList<>();
         try {
             Statement statement = mConnection.createStatement();
-            statement.execute(SQL_SELECT_MEDICATIONS);
+            statement.execute("SELECT * FROM Medication JOIN Stock ON Medication.medicationID = Stock.Medication_medicationID;");
             ResultSet result = statement.getResultSet();
             while (result.next()) {
 
@@ -163,22 +131,31 @@ public class DatabaseConnector {
     public List<Transaction> getTransactions() {
         ArrayList<Transaction> list = new ArrayList<>();
         List<Medication> medications = getMedications();
+        int lastID = -1;
         try {
             Statement statement = mConnection.createStatement();
-            statement.execute(SQL_SELECT_TRANSACTIONS);
+            statement.execute("SELECT * FROM Transaction JOIN Transaction_has_Medication " +
+                    "ON Transaction.transactionID = Transaction_has_Medication.Transaction_transactionID" +
+                    " ORDER BY transactionID;");
+
             ResultSet result = statement.getResultSet();
             while (result.next()) {
-
                 int transactionID = result.getInt("medicationID");
+//                if(lastID == -1)
+//                    result.
                 Date date = result.getDate("date");
                 int total = result.getInt("total");
                 String paymentMethod = result.getString("paymentMethod");
-
-//                list.add(new Transaction(transactionID, medications.stream().filter(medication -> ), date, paymentMethod));
+                list.add(new Transaction(transactionID, , date, paymentMethod));
             }
             result.close();
             statement.close();
             return list;
+
+
+            PreparedStatement medicationStatament = mConnection.prepareStatement("SELECT * FROM Transaction_has_Medication WHERE Transaction_transactionID = ?");
+
+
         } catch (Exception e) {
             LOG.info("Something went wrong...");
         }

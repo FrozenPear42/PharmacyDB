@@ -1,27 +1,14 @@
 package com.bugfullabs.pharmacydb.main;
 
-import com.bugfullabs.pharmacydb.DatabaseConnector;
-import com.bugfullabs.pharmacydb.model.Medication;
-import com.bugfullabs.pharmacydb.model.Transaction;
-import com.bugfullabs.pharmacydb.ui.LabeledBox;
+import com.bugfullabs.pharmacydb.window.ListTransactionWindow;
+import com.bugfullabs.pharmacydb.window.ManageEmployeesWindow;
+import com.bugfullabs.pharmacydb.window.NewTransactionWindow;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
 
 public class Main extends Application {
 

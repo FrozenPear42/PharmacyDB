@@ -1,8 +1,7 @@
-package com.bugfullabs.pharmacydb.main;
+package com.bugfullabs.pharmacydb.window;
 
-import com.bugfullabs.pharmacydb.DatabaseConnector;
+import com.bugfullabs.pharmacydb.main.DatabaseConnector;
 import com.bugfullabs.pharmacydb.model.Employee;
-import com.bugfullabs.pharmacydb.model.Medication;
 import com.bugfullabs.pharmacydb.ui.LabeledBox;
 import com.bugfullabs.pharmacydb.ui.VLabeledBox;
 import javafx.beans.property.*;
@@ -12,19 +11,21 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import sun.rmi.runtime.Log;
 
-import java.util.logging.Logger;
+import java.text.DecimalFormat;
 
 public class ManageEmployeesWindow {
 
     private DatabaseConnector mConnector;
     private ObservableList<Employee> mEmployees;
     private TableView<Employee> mEmployeeTableView;
+    private Label mAverageSalaryLabel;
+    private Label mTotalSalaryLabel;
+
+
 
     public ManageEmployeesWindow(DatabaseConnector connector) {
         mConnector = connector;
@@ -109,8 +110,14 @@ public class ManageEmployeesWindow {
         });
 
         mEmployeeTableView.getColumns().add(removeColumn);
-
         root.getChildren().add(mEmployeeTableView);
+
+        mAverageSalaryLabel = new Label();
+        root.getChildren().add(new LabeledBox("Average salary", mAverageSalaryLabel));
+        mTotalSalaryLabel = new Label();
+        root.getChildren().add(new LabeledBox("Total salary", mTotalSalaryLabel));
+
+        updateSalaries();
 
         Button addNew = new Button("Add new...");
         addNew.setOnAction(e -> addEmployee());
@@ -123,7 +130,20 @@ public class ManageEmployeesWindow {
         root.getChildren().add(buttonsBox);
     }
 
+    private void updateSalaries() {
+        mEmployees.stream()
+                .mapToDouble(Employee::getSalary)
+                .average()
+                .ifPresent(avg -> mAverageSalaryLabel.setText(new DecimalFormat("#.00").format(avg)));
+
+        double sum = mEmployees.stream()
+                .mapToDouble(Employee::getSalary)
+                .sum();
+        mTotalSalaryLabel.setText(new DecimalFormat("#.00").format(sum));
+    }
+
     private void addEmployee() {
+        updateSalaries();
     }
 
     private void editEmployee(Employee item) {
@@ -133,6 +153,7 @@ public class ManageEmployeesWindow {
     private void deleteEmployee(Employee item) {
         mConnector.deleteEmployee(item);
         mEmployees.remove(item);
+        updateSalaries();
     }
 
     private class EmployeeEditWindow {
@@ -188,6 +209,7 @@ public class ManageEmployeesWindow {
                 employee.getContact().setStreet(street.getText());
                 employee.getContact().setCity(city.getText());
                 employee.getContact().setZipCode(zipCode.getText());
+                updateSalaries();
                 mEmployeeTableView.refresh();
                 mConnector.updateEmployee(employee);
                 stage.close();

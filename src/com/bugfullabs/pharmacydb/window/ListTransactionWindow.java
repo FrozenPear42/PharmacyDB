@@ -1,6 +1,6 @@
-package com.bugfullabs.pharmacydb.main;
+package com.bugfullabs.pharmacydb.window;
 
-import com.bugfullabs.pharmacydb.DatabaseConnector;
+import com.bugfullabs.pharmacydb.main.DatabaseConnector;
 import com.bugfullabs.pharmacydb.model.Transaction;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

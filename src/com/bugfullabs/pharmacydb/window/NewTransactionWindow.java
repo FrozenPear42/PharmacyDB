@@ -1,6 +1,6 @@
-package com.bugfullabs.pharmacydb.main;
+package com.bugfullabs.pharmacydb.window;
 
-import com.bugfullabs.pharmacydb.DatabaseConnector;
+import com.bugfullabs.pharmacydb.main.DatabaseConnector;
 import com.bugfullabs.pharmacydb.model.Medication;
 import com.bugfullabs.pharmacydb.model.Transaction;
 import com.bugfullabs.pharmacydb.ui.LabeledBox;
@@ -18,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,6 +98,10 @@ public class NewTransactionWindow {
         priceColumn.setCellValueFactory(p -> new SimpleDoubleProperty(p.getValue().getStockPrice()).asString());
         medicationTableView.getColumns().add(priceColumn);
 
+        TableColumn<Medication, String> locationColumn = new TableColumn<>("Location");
+        locationColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getStockLocation()));
+        medicationTableView.getColumns().add(locationColumn);
+        
         root.getChildren().add(medicationTableView);
 
         mTotalLabel = new Label("0.00");
@@ -149,7 +154,7 @@ public class NewTransactionWindow {
 
     private void updateTotal() {
         mTotal = mMedicationsList.stream().mapToDouble(med -> med.getStockPrice() * mQuantityMap.get(med)).sum();
-        mTotalLabel.setText(Double.toString(mTotal));
+        mTotalLabel.setText(new DecimalFormat("#.00").format(mTotal));
     }
 
     private void doSelectMedication(MedicationSelectedListener listener) {

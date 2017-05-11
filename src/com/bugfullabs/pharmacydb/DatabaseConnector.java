@@ -29,22 +29,22 @@ public class DatabaseConnector {
 
     private static final String SQL_SELECT_MEDICATIONS = "SELECT * FROM Medication JOIN Stock ON Medication.medicationID = Stock.Medication_medicationID;";
     private static final String SQL_CREATE_DB = "";
+    private static final String SQL_SELECT_TRANSACTIONS = "SELECT * FROM Transaction";
 
 
     private static Logger LOG = Logger.getAnonymousLogger();
-    private Connection mConnction;
-    private List<Transaction> mTransactions;
+    private Connection mConnection;
 
     public DatabaseConnector(String uri, String username, String password) throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
-        mConnction = DriverManager.getConnection(uri, username, password);
+        mConnection = DriverManager.getConnection(uri, username, password);
         LOG.info("created connection to " + uri);
     }
 
 
     public void createDatabase() {
         try {
-            Statement statement = mConnction.createStatement();
+            Statement statement = mConnection.createStatement();
             statement.execute(SQL_CREATE_DB);
         } catch (Exception e) {
             LOG.info("FUCK...");
@@ -54,7 +54,7 @@ public class DatabaseConnector {
     public List<Employee> getEmployees() {
         ArrayList<Employee> list = new ArrayList<>();
         try {
-            Statement statement = mConnction.createStatement();
+            Statement statement = mConnection.createStatement();
             statement.execute(SQL_SELECT_EMPLOYEES);
             ResultSet result = statement.getResultSet();
             while (result.next()) {
@@ -89,7 +89,7 @@ public class DatabaseConnector {
     public List<Medication> getMedications() {
         ArrayList<Medication> list = new ArrayList<>();
         try {
-            Statement statement = mConnction.createStatement();
+            Statement statement = mConnection.createStatement();
             statement.execute(SQL_SELECT_MEDICATIONS);
             ResultSet result = statement.getResultSet();
             while (result.next()) {
@@ -123,7 +123,7 @@ public class DatabaseConnector {
     public int addTransaction(Transaction transaction) {
         try {
 
-            PreparedStatement statement = mConnction.prepareStatement("INSERT INTO Transaction (total, date, paymentMethod) VALUES ( ?, ? , ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = mConnection.prepareStatement("INSERT INTO Transaction (total, date, paymentMethod) VALUES ( ?, ? , ?)", Statement.RETURN_GENERATED_KEYS);
             statement.setDouble(1, transaction.getMedications().stream().mapToDouble(Medication::getStockPrice).sum());
             statement.setDate(2, transaction.getDate());
             statement.setString(3, transaction.getPaymentMethod());
@@ -136,7 +136,7 @@ public class DatabaseConnector {
 
             statement.close();
 
-            PreparedStatement s = mConnction.prepareStatement("INSERT INTO Transaction_has_Medication (Transaction_transactionID, Medication_medicationID, amount) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement s = mConnection.prepareStatement("INSERT INTO Transaction_has_Medication (Transaction_transactionID, Medication_medicationID, amount) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             transaction.getMedications().forEach(medication -> {
                 try {
                     s.clearParameters();
@@ -162,6 +162,49 @@ public class DatabaseConnector {
 
 
     public List<Transaction> getTransactions() {
-        return mTransactions;
+        ArrayList<Transaction> list = new ArrayList<>();
+        List<Medication> medications = getMedications();
+        try {
+            Statement statement = mConnection.createStatement();
+            statement.execute(SQL_SELECT_TRANSACTIONS);
+            ResultSet result = statement.getResultSet();
+            while (result.next()) {
+
+                int transactionID = result.getInt("medicationID");
+                Date date = result.getDate("date");
+                int total = result.getInt("total");
+                String paymentMethod = result.getString("paymentMethod");
+
+//                list.add(new Transaction(transactionID, medications.stream().filter(medication -> ), date, paymentMethod));
+            }
+            result.close();
+            statement.close();
+            return list;
+        } catch (Exception e) {
+            LOG.info("FUCK...");
+        }
+        return null;
+    }
+
+    public void updateEmployee(Employee employee) {
+
+    }
+
+    public void deleteEmployee(Employee item) {
+        try {
+            PreparedStatement statement = mConnection.prepareStatement("DELETE FROM Employee WHERE employeeID = ?;");
+            statement.setInt(1, item.getID());
+            statement.executeUpdate();
+            statement.close();
+
+            statement = mConnection.prepareStatement("DELETE FROM Contact WHERE contactID = ?;");
+            statement.setInt(1, item.getContact().getID());
+            statement.executeUpdate();
+            statement.close();
+
+        } catch (Exception e) {
+            LOG.info("FUCK...");
+            e.printStackTrace();
+        }
     }
 }

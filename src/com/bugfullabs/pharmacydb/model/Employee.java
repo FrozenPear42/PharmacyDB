@@ -15,6 +15,10 @@ public class Employee {
         mContact = contact;
     }
 
+    public int getID() {
+        return mID;
+    }
+
     public String getName() {
         return mName;
     }
@@ -29,5 +33,17 @@ public class Employee {
 
     public Contact getContact() {
         return mContact;
+    }
+
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public void setSurname(String surname) {
+        mSurname = surname;
+    }
+
+    public void setSalary(double salary) {
+        mSalary = salary;
     }
 }

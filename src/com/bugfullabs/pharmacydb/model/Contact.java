@@ -40,4 +40,24 @@ public class Contact {
     public String getZipCode() {
         return mZipCode;
     }
+
+    public void setEmail(String email) {
+        mEmail = email;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        mPhoneNumber = phoneNumber;
+    }
+
+    public void setStreet(String street) {
+        mStreet = street;
+    }
+
+    public void setCity(String city) {
+        mCity = city;
+    }
+
+    public void setZipCode(String zipCode) {
+        mZipCode = zipCode;
+    }
 }

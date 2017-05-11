@@ -51,9 +51,7 @@ public class Main extends Application {
 
 
         Button manageEmployees = new Button("Manage Employees");
-        manageEmployees.setOnAction(e -> {
-
-        });
+        manageEmployees.setOnAction(e -> new ManageEmployeesWindow(connector));
         manageEmployees.setMinSize(150, 100);
 
         root.setAlignment(Pos.CENTER);
@@ -63,9 +61,6 @@ public class Main extends Application {
         root.add(listTransactions, 1, 0);
         root.add(manageMedications, 0, 1);
         root.add(manageEmployees, 1, 1);
-
-//        connector.addTransaction(new Transaction(medications, new Date(new java.util.Date().getTime()), "VISA"));
-//        connector.addTransaction(new Transaction(medications, new Date(new java.util.Date().getTime()), "MC"));
 
     }
 

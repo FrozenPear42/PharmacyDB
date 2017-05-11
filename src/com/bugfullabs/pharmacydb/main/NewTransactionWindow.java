@@ -27,6 +27,9 @@ public class NewTransactionWindow {
     public NewTransactionWindow(DatabaseConnector connector) {
         mConnector = connector;
 
+        ObservableList<Medication> medicationsList = FXCollections.observableArrayList();
+        HashMap<Medication, Integer> quantityMap = new HashMap<>();
+
         VBox root = new VBox(10);
         root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(10));
@@ -49,9 +52,6 @@ public class NewTransactionWindow {
         visa.setSelected(true);
         VBox paymentMethodBox = new VBox(10, visa, masterCard, cash);
         root.getChildren().add(new LabeledBox("Payment method", paymentMethodBox));
-
-        ObservableList<Medication> medicationsList = FXCollections.observableArrayList();
-        HashMap<Medication, Integer> quantityMap = new HashMap<>();
 
         TableView<Medication> medicationTableView = new TableView<>(medicationsList);
 
@@ -89,7 +89,6 @@ public class NewTransactionWindow {
         typeColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getType()));
         medicationTableView.getColumns().add(typeColumn);
 
-
         root.getChildren().add(medicationTableView);
 
         Button addMedication = new Button("Add Medication");
@@ -112,8 +111,18 @@ public class NewTransactionWindow {
                 payment = "MC";
             else if (cash.isSelected())
                 payment = "cash";
-            int id = mConnector.addTransaction(new Transaction(medicationsList, new java.sql.Date(date.getTime()), payment));
+
+            if (medicationsList.isEmpty()) {
+                Alert info = new Alert(Alert.AlertType.ERROR);
+                info.setHeaderText(null);
+                info.setContentText("Transaction is empty!");
+                info.showAndWait();
+                return;
+            }
+
+            int id = mConnector.addTransaction(new Transaction(medicationsList, quantityMap, new java.sql.Date(date.getTime()), payment));
             Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setHeaderText(null);
             info.setContentText(String.format("Added transaction with ID: %d", id));
             info.showAndWait();
             stage.close();

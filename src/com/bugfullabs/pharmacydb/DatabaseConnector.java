@@ -142,8 +142,7 @@ public class DatabaseConnector {
                     s.clearParameters();
                     s.setInt(1, id);
                     s.setInt(2, medication.getMedicationID());
-                    //FIXME: get real value
-                    s.setInt(3, 10);
+                    s.setInt(3, transaction.getQuantityOf(medication));
                     s.executeUpdate();
 
                 } catch (Exception e) {

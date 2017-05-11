@@ -5,7 +5,9 @@ import com.bugfullabs.pharmacydb.model.Medication;
 import com.bugfullabs.pharmacydb.model.Transaction;
 import com.bugfullabs.pharmacydb.ui.LabeledBox;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -19,16 +21,18 @@ import javafx.stage.Stage;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 public class NewTransactionWindow {
 
     private DatabaseConnector mConnector;
+    private ObservableList<Medication> mMedicationsList = FXCollections.observableArrayList();
+    private HashMap<Medication, Integer> mQuantityMap = new HashMap<>();
+    private double mTotal = 0.00;
+    private Label mTotalLabel;
 
     public NewTransactionWindow(DatabaseConnector connector) {
         mConnector = connector;
-
-        ObservableList<Medication> medicationsList = FXCollections.observableArrayList();
-        HashMap<Medication, Integer> quantityMap = new HashMap<>();
 
         VBox root = new VBox(10);
         root.setAlignment(Pos.TOP_CENTER);
@@ -53,7 +57,7 @@ public class NewTransactionWindow {
         VBox paymentMethodBox = new VBox(10, visa, masterCard, cash);
         root.getChildren().add(new LabeledBox("Payment method", paymentMethodBox));
 
-        TableView<Medication> medicationTableView = new TableView<>(medicationsList);
+        TableView<Medication> medicationTableView = new TableView<>(mMedicationsList);
 
         TableColumn<Medication, Medication> removeColumn = new TableColumn<>("X");
         removeColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper<>(p.getValue()));
@@ -63,7 +67,7 @@ public class NewTransactionWindow {
                 super.updateItem(item, empty);
                 if (!empty) {
                     Button button = new Button("X");
-                    button.setOnAction(e -> medicationsList.remove(item));
+                    button.setOnAction(e -> mMedicationsList.remove(item));
                     setAlignment(Pos.CENTER);
                     setGraphic(button);
                 } else {
@@ -74,30 +78,38 @@ public class NewTransactionWindow {
         medicationTableView.getColumns().add(removeColumn);
 
         TableColumn<Medication, String> quantityColumn = new TableColumn<>("Quantity");
-        quantityColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(quantityMap.get(p.getValue()).toString()));
+        quantityColumn.setCellValueFactory(p -> new SimpleIntegerProperty(mQuantityMap.get(p.getValue())).asString());
         medicationTableView.getColumns().add(quantityColumn);
 
         TableColumn<Medication, String> nameColumn = new TableColumn<>("Name");
-        nameColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getName()));
+        nameColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getName()));
         medicationTableView.getColumns().add(nameColumn);
 
         TableColumn<Medication, String> amountColumn = new TableColumn<>("Amount");
-        amountColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getAmount()));
+        amountColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getAmount()));
         medicationTableView.getColumns().add(amountColumn);
 
         TableColumn<Medication, String> typeColumn = new TableColumn<>("Type");
-        typeColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getType()));
+        typeColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getType()));
         medicationTableView.getColumns().add(typeColumn);
 
+        TableColumn<Medication, String> priceColumn = new TableColumn<>("Price/pcs");
+        priceColumn.setCellValueFactory(p -> new SimpleDoubleProperty(p.getValue().getStockPrice()).asString());
+        medicationTableView.getColumns().add(priceColumn);
+
         root.getChildren().add(medicationTableView);
+
+        mTotalLabel = new Label("0.00");
+        root.getChildren().add(new LabeledBox("Total", mTotalLabel));
 
         Button addMedication = new Button("Add Medication");
         addMedication.setOnAction(e -> doSelectMedication((medication, quantity) -> {
             if (medication != null) {
-                if (quantityMap.putIfAbsent(medication, quantity) != null)
-                    quantityMap.replace(medication, quantity + quantityMap.get(medication));
+                if (mQuantityMap.putIfAbsent(medication, quantity) != null)
+                    mQuantityMap.replace(medication, quantity + mQuantityMap.get(medication));
 
-                medicationsList.add(medication);
+                mMedicationsList.add(medication);
+                updateTotal();
             }
         }));
         root.getChildren().add(addMedication);
@@ -112,7 +124,7 @@ public class NewTransactionWindow {
             else if (cash.isSelected())
                 payment = "cash";
 
-            if (medicationsList.isEmpty()) {
+            if (mMedicationsList.isEmpty()) {
                 Alert info = new Alert(Alert.AlertType.ERROR);
                 info.setHeaderText(null);
                 info.setContentText("Transaction is empty!");
@@ -120,7 +132,8 @@ public class NewTransactionWindow {
                 return;
             }
 
-            int id = mConnector.addTransaction(new Transaction(medicationsList, quantityMap, new java.sql.Date(date.getTime()), payment));
+            Logger.getAnonymousLogger().info("Total: " + mTotal);
+            int id = mConnector.addTransaction(new Transaction(mTotal, mMedicationsList, mQuantityMap, new java.sql.Date(date.getTime()), payment));
             Alert info = new Alert(Alert.AlertType.INFORMATION);
             info.setHeaderText(null);
             info.setContentText(String.format("Added transaction with ID: %d", id));
@@ -132,6 +145,11 @@ public class NewTransactionWindow {
         buttonsBox.setAlignment(Pos.CENTER);
         root.getChildren().add(buttonsBox);
 
+    }
+
+    private void updateTotal() {
+        mTotal = mMedicationsList.stream().mapToDouble(med -> med.getStockPrice() * mQuantityMap.get(med)).sum();
+        mTotalLabel.setText(Double.toString(mTotal));
     }
 
     private void doSelectMedication(MedicationSelectedListener listener) {
@@ -148,23 +166,23 @@ public class NewTransactionWindow {
         TableView<Medication> medicationTableView = new TableView<>(medicationList);
 
         TableColumn<Medication, String> nameColumn = new TableColumn<>("Name");
-        nameColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getName()));
+        nameColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getName()));
         medicationTableView.getColumns().add(nameColumn);
 
         TableColumn<Medication, String> typeColumn = new TableColumn<>("Type");
-        typeColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getType()));
+        typeColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getType()));
         medicationTableView.getColumns().add(typeColumn);
 
         TableColumn<Medication, String> amountColumn = new TableColumn<>("Amount");
-        amountColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(p.getValue().getAmount()));
+        amountColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getAmount()));
         medicationTableView.getColumns().add(amountColumn);
 
         TableColumn<Medication, String> stockColumn = new TableColumn<>("In stock");
-        stockColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(Double.toString(p.getValue().getStockAmount())));
+        stockColumn.setCellValueFactory(p -> new SimpleStringProperty(Double.toString(p.getValue().getStockAmount())));
         medicationTableView.getColumns().add(stockColumn);
 
         TableColumn<Medication, String> priceColumn = new TableColumn<>("Price");
-        priceColumn.setCellValueFactory(p -> new ReadOnlyStringWrapper(Double.toString(p.getValue().getStockPrice())));
+        priceColumn.setCellValueFactory(p -> new SimpleStringProperty(Double.toString(p.getValue().getStockPrice())));
         medicationTableView.getColumns().add(priceColumn);
 
         root.getChildren().add(medicationTableView);

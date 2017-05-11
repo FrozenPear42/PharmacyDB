@@ -47,7 +47,7 @@ public class DatabaseConnector {
             Statement statement = mConnection.createStatement();
             statement.execute(SQL_CREATE_DB);
         } catch (Exception e) {
-            LOG.info("FUCK...");
+            LOG.info("Something went wrong...");
         }
     }
 
@@ -77,7 +77,7 @@ public class DatabaseConnector {
             statement.close();
             return list;
         } catch (Exception e) {
-            LOG.info("FUCK...");
+            LOG.info("Something went wrong...");
         }
         return null;
     }
@@ -115,7 +115,7 @@ public class DatabaseConnector {
             statement.close();
             return list;
         } catch (Exception e) {
-            LOG.info("FUCK...");
+            LOG.info("Something went wrong...");
         }
         return null;
     }
@@ -124,7 +124,7 @@ public class DatabaseConnector {
         try {
 
             PreparedStatement statement = mConnection.prepareStatement("INSERT INTO Transaction (total, date, paymentMethod) VALUES ( ?, ? , ?)", Statement.RETURN_GENERATED_KEYS);
-            statement.setDouble(1, transaction.getMedications().stream().mapToDouble(Medication::getStockPrice).sum());
+            statement.setDouble(1, transaction.getTotal());
             statement.setDate(2, transaction.getDate());
             statement.setString(3, transaction.getPaymentMethod());
             statement.executeUpdate();
@@ -153,7 +153,7 @@ public class DatabaseConnector {
             return id;
 
         } catch (Exception e) {
-            LOG.info("FUCK...");
+            LOG.info("Something went wrong...");
             e.printStackTrace();
         }
         return -1;
@@ -180,13 +180,35 @@ public class DatabaseConnector {
             statement.close();
             return list;
         } catch (Exception e) {
-            LOG.info("FUCK...");
+            LOG.info("Something went wrong...");
         }
         return null;
     }
 
     public void updateEmployee(Employee employee) {
+        try {
+            PreparedStatement statement = mConnection.prepareStatement("UPDATE Employee SET name=?, surname=?, salary=? WHERE employeeID = ?");
+            statement.setString(1, employee.getName());
+            statement.setString(2, employee.getSurname());
+            statement.setDouble(3, employee.getSalary());
+            statement.setInt(4, employee.getID());
+            statement.executeUpdate();
+            statement.close();
 
+            statement = mConnection.prepareStatement("UPDATE Contact SET email=?, phoneNumber=?, street=?, city=?, zipCode=? WHERE contactID=?");
+            statement.setString(1, employee.getContact().getEmail());
+            statement.setString(2, employee.getContact().getPhoneNumber());
+            statement.setString(3, employee.getContact().getStreet());
+            statement.setString(4, employee.getContact().getCity());
+            statement.setString(5, employee.getContact().getZipCode());
+            statement.setInt(6, employee.getContact().getID());
+            statement.executeUpdate();
+            statement.close();
+
+        } catch (Exception e) {
+            LOG.info("Something went wrong...");
+            e.printStackTrace();
+        }
     }
 
     public void deleteEmployee(Employee item) {
@@ -202,7 +224,7 @@ public class DatabaseConnector {
             statement.close();
 
         } catch (Exception e) {
-            LOG.info("FUCK...");
+            LOG.info("Something went wrong...");
             e.printStackTrace();
         }
     }

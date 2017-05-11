@@ -6,23 +6,27 @@ import java.util.Map;
 
 public class Transaction {
     private int mTransactionID;
+    private double mTotal;
     private List<Medication> mMedications;
-    private Map<Medication, Integer> mMadicationQuantity;
+    private Map<Medication, Integer> mMedicationQuantity;
     private Date mDate;
     private String mPaymentMethod;
 
-
-    public Transaction(int transactionID, List<Medication> medications, Map<Medication, Integer> madicationQuantity, Date date, String paymentMethod) {
+    public Transaction(int transactionID, double total, List<Medication> medications,
+                       Map<Medication, Integer> medicationQuantity, Date date, String paymentMethod) {
         mTransactionID = transactionID;
+        mTotal = total;
         mMedications = medications;
-        mMadicationQuantity = madicationQuantity;
+        mMedicationQuantity = medicationQuantity;
         mDate = date;
         mPaymentMethod = paymentMethod;
     }
 
-    public Transaction(List<Medication> medications, Map<Medication, Integer> madicationQuantity, Date date, String paymentMethod) {
+    public Transaction(double total, List<Medication> medications,
+                       Map<Medication, Integer> medicationQuantity, Date date, String paymentMethod) {
+        mTotal = total;
         mMedications = medications;
-        mMadicationQuantity = madicationQuantity;
+        mMedicationQuantity = medicationQuantity;
         mDate = date;
         mPaymentMethod = paymentMethod;
     }
@@ -44,6 +48,10 @@ public class Transaction {
     }
 
     public int getQuantityOf(Medication medication) {
-        return mMadicationQuantity.get(medication);
+        return mMedicationQuantity.get(medication);
+    }
+
+    public double getTotal() {
+        return mTotal;
     }
 }

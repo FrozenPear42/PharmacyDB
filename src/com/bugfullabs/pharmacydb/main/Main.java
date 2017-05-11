@@ -31,9 +31,8 @@ public class Main extends Application {
 
 
         Button manageMedications = new Button("Manage Medications");
-        manageMedications.setOnAction(e -> {
-
-        });
+        manageMedications.setOnAction(e -> {});
+        manageMedications.setDisable(true);
         manageMedications.setMinSize(150, 100);
 
 

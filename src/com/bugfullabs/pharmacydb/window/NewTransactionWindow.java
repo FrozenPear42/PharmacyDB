@@ -22,6 +22,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class NewTransactionWindow {
@@ -32,8 +33,12 @@ public class NewTransactionWindow {
     private double mTotal = 0.00;
     private Label mTotalLabel;
 
+    private ObservableList<Medication> mMedications;
+
     public NewTransactionWindow(DatabaseConnector connector) {
         mConnector = connector;
+        mMedications = FXCollections.observableList(mConnector.getMedications());
+
 
         VBox root = new VBox(10);
         root.setAlignment(Pos.TOP_CENTER);
@@ -101,7 +106,7 @@ public class NewTransactionWindow {
         TableColumn<Medication, String> locationColumn = new TableColumn<>("Location");
         locationColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getStockLocation()));
         medicationTableView.getColumns().add(locationColumn);
-        
+
         root.getChildren().add(medicationTableView);
 
         mTotalLabel = new Label("0.00");
@@ -112,9 +117,10 @@ public class NewTransactionWindow {
             if (medication != null) {
                 if (mQuantityMap.putIfAbsent(medication, quantity) != null)
                     mQuantityMap.replace(medication, quantity + mQuantityMap.get(medication));
-
-                mMedicationsList.add(medication);
+                else
+                    mMedicationsList.add(medication);
                 updateTotal();
+                medicationTableView.refresh();
             }
         }));
         root.getChildren().add(addMedication);
@@ -166,9 +172,7 @@ public class NewTransactionWindow {
         stage.setScene(new Scene(root, 400, 500));
         stage.show();
 
-        ObservableList<Medication> medicationList = FXCollections.observableList(mConnector.getMedications());
-
-        TableView<Medication> medicationTableView = new TableView<>(medicationList);
+        TableView<Medication> medicationTableView = new TableView<>(mMedications);
 
         TableColumn<Medication, String> nameColumn = new TableColumn<>("Name");
         nameColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getName()));

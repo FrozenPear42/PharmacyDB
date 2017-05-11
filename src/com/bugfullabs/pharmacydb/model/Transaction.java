@@ -54,4 +54,8 @@ public class Transaction {
     public double getTotal() {
         return mTotal;
     }
+
+    public Map<Medication, Integer> getMedicationsQuantity() {
+        return mMedicationQuantity;
+    }
 }

@@ -7,6 +7,7 @@ import com.bugfullabs.pharmacydb.model.Transaction;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -91,7 +92,9 @@ public class DatabaseConnector {
     public int addTransaction(Transaction transaction) {
         try {
 
-            PreparedStatement statement = mConnection.prepareStatement("INSERT INTO Transaction (total, date, paymentMethod) VALUES ( ?, ? , ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = mConnection.prepareStatement(
+                    "INSERT INTO Transaction (total, date, paymentMethod) " +
+                            "VALUES ( ?, ? , ?)", Statement.RETURN_GENERATED_KEYS);
             statement.setDouble(1, transaction.getTotal());
             statement.setDate(2, transaction.getDate());
             statement.setString(3, transaction.getPaymentMethod());
@@ -104,7 +107,9 @@ public class DatabaseConnector {
 
             statement.close();
 
-            PreparedStatement s = mConnection.prepareStatement("INSERT INTO Transaction_has_Medication (Transaction_transactionID, Medication_medicationID, amount) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement s = mConnection.prepareStatement(
+                    "INSERT INTO Transaction_has_Medication (Transaction_transactionID, Medication_medicationID, amount) " +
+                            "VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             transaction.getMedications().forEach(medication -> {
                 try {
                     s.clearParameters();
@@ -139,25 +144,37 @@ public class DatabaseConnector {
                     " ORDER BY transactionID;");
 
             ResultSet result = statement.getResultSet();
+            ArrayList<Medication> transactionMedication = new ArrayList<>();
+            HashMap<Medication, Integer> medicationQuantity = new HashMap<>();
+            Date date = new Date(0);
+            int total = 0;
+            String paymentMethod = "None";
             while (result.next()) {
-                int transactionID = result.getInt("medicationID");
-//                if(lastID == -1)
-//                    result.
-                Date date = result.getDate("date");
-                int total = result.getInt("total");
-                String paymentMethod = result.getString("paymentMethod");
-                list.add(new Transaction(transactionID, , date, paymentMethod));
+                int transactionID = result.getInt("transactionID");
+
+                if (transactionID != lastID && lastID != -1) {
+                    list.add(new Transaction(lastID, total, transactionMedication, medicationQuantity, date, paymentMethod));
+                    transactionMedication = new ArrayList<>();
+                    medicationQuantity = new HashMap<>();
+                }
+                date = result.getDate("date");
+                total = result.getInt("total");
+                paymentMethod = result.getString("paymentMethod");
+                int medicationID = result.getInt("Medication_medicationID");
+                Medication m = medications.stream().filter(medication -> medication.getMedicationID() == medicationID)
+                        .findFirst().get();
+                transactionMedication.add(m);
+                medicationQuantity.put(m, result.getInt("amount"));
+                lastID = transactionID;
             }
+            list.add(new Transaction(lastID, total, transactionMedication, medicationQuantity, date, paymentMethod));
             result.close();
             statement.close();
             return list;
 
-
-            PreparedStatement medicationStatament = mConnection.prepareStatement("SELECT * FROM Transaction_has_Medication WHERE Transaction_transactionID = ?");
-
-
         } catch (Exception e) {
             LOG.info("Something went wrong...");
+            e.printStackTrace();
         }
         return null;
     }

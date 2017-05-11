@@ -33,6 +33,7 @@ public class DatabaseConnector {
 
     private static Logger LOG = Logger.getAnonymousLogger();
     private Connection mConnction;
+    private List<Transaction> mTransactions;
 
     public DatabaseConnector(String uri, String username, String password) throws Exception {
         Class.forName("com.mysql.jdbc.Driver");
@@ -81,6 +82,9 @@ public class DatabaseConnector {
         return null;
     }
 
+    public void updateMedication(Medication medication) {
+
+    }
 
     public List<Medication> getMedications() {
         ArrayList<Medication> list = new ArrayList<>();
@@ -116,7 +120,7 @@ public class DatabaseConnector {
         return null;
     }
 
-    public void addTransaction(Transaction transaction) {
+    public int addTransaction(Transaction transaction) {
         try {
 
             PreparedStatement statement = mConnction.prepareStatement("INSERT INTO Transaction (total, date, paymentMethod) VALUES ( ?, ? , ?)", Statement.RETURN_GENERATED_KEYS);
@@ -130,7 +134,6 @@ public class DatabaseConnector {
             gen.next();
             int id = gen.getInt(1);
 
-
             statement.close();
 
             PreparedStatement s = mConnction.prepareStatement("INSERT INTO Transaction_has_Medication (Transaction_transactionID, Medication_medicationID, amount) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -142,17 +145,23 @@ public class DatabaseConnector {
                     //FIXME: get real value
                     s.setInt(3, 10);
                     s.executeUpdate();
+
                 } catch (Exception e) {
                     LOG.info("Ups...");
                 }
             });
             s.close();
+            return id;
 
         } catch (Exception e) {
             LOG.info("FUCK...");
             e.printStackTrace();
         }
+        return -1;
     }
 
 
+    public List<Transaction> getTransactions() {
+        return mTransactions;
+    }
 }

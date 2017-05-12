@@ -26,7 +26,6 @@ public class ManageEmployeesWindow {
     private Label mTotalSalaryLabel;
 
 
-
     public ManageEmployeesWindow(DatabaseConnector connector) {
         mConnector = connector;
         mEmployees = FXCollections.observableArrayList(connector.getEmployees());
@@ -143,11 +142,11 @@ public class ManageEmployeesWindow {
     }
 
     private void addEmployee() {
-        updateSalaries();
+        new EmployeeEditWindow(Employee.createEmptySchema(), true);
     }
 
     private void editEmployee(Employee item) {
-        new EmployeeEditWindow(item);
+        new EmployeeEditWindow(item, false);
     }
 
     private void deleteEmployee(Employee item) {
@@ -157,12 +156,12 @@ public class ManageEmployeesWindow {
     }
 
     private class EmployeeEditWindow {
-        public EmployeeEditWindow(Employee employee) {
+        public EmployeeEditWindow(Employee employee, boolean isNew) {
             VBox root = new VBox(10);
             root.setAlignment(Pos.TOP_CENTER);
             root.setPadding(new Insets(10));
             Stage stage = new Stage();
-            stage.setTitle("Select Medication");
+            stage.setTitle("Edit Employee");
             stage.setScene(new Scene(root, 400, 700));
             stage.show();
 
@@ -211,7 +210,12 @@ public class ManageEmployeesWindow {
                 employee.getContact().setZipCode(zipCode.getText());
                 updateSalaries();
                 mEmployeeTableView.refresh();
-                mConnector.updateEmployee(employee);
+                if (!isNew) {
+                    mConnector.updateEmployee(employee);
+                } else {
+                    mConnector.addEmployee(employee);
+                    mEmployees.add(employee);
+                }
                 stage.close();
             });
             HBox buttonsBox = new HBox(10, cancel, done);

@@ -46,4 +46,8 @@ public class Employee {
     public void setSalary(double salary) {
         mSalary = salary;
     }
+
+    public static Employee createEmptySchema() {
+        return new Employee(-1, "", "", 0, new Contact(-1, "", "", "", "", ""));
+    }
 }

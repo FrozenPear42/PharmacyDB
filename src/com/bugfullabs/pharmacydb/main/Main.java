@@ -30,23 +30,27 @@ public class Main extends Application {
         listTransactions.setMinSize(150, 100);
 
 
-        Button manageMedications = new Button("Manage Medications");
-        manageMedications.setOnAction(e -> {});
-        manageMedications.setDisable(true);
-        manageMedications.setMinSize(150, 100);
-
+//        Button manageMedications = new Button("Manage Medications");
+//        manageMedications.setOnAction(e -> {});
+//        manageMedications.setDisable(true);
+//        manageMedications.setMinSize(150, 100);
 
         Button manageEmployees = new Button("Manage Employees");
         manageEmployees.setOnAction(e -> new ManageEmployeesWindow(connector));
         manageEmployees.setMinSize(150, 100);
+
+        Button exit = new Button("Exit");
+        exit.setOnAction(e -> primaryStage.close());
+        exit.setMinSize(150, 100);
+
 
         root.setAlignment(Pos.CENTER);
         root.setHgap(10);
         root.setVgap(10);
         root.add(newTransaction, 0, 0);
         root.add(listTransactions, 1, 0);
-        root.add(manageMedications, 0, 1);
-        root.add(manageEmployees, 1, 1);
+        root.add(manageEmployees, 0, 1);
+        root.add(exit, 1, 1);
 
     }
 

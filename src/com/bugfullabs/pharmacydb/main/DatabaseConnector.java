@@ -104,7 +104,7 @@ public class DatabaseConnector {
             ResultSet gen = statement.getGeneratedKeys();
             gen.next();
             int id = gen.getInt(1);
-
+            gen.close();
             statement.close();
 
             PreparedStatement s = mConnection.prepareStatement(
@@ -177,6 +177,37 @@ public class DatabaseConnector {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void addEmployee(Employee employee) {
+        try {
+
+            PreparedStatement statement = mConnection.prepareStatement("INSERT INTO Contact (email, phoneNumber, street, city, zipCode) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, employee.getContact().getEmail());
+            statement.setString(2, employee.getContact().getPhoneNumber());
+            statement.setString(3, employee.getContact().getStreet());
+            statement.setString(4, employee.getContact().getCity());
+            statement.setString(5, employee.getContact().getZipCode());
+            statement.executeUpdate();
+
+            ResultSet gen = statement.getGeneratedKeys();
+            gen.next();
+            int contactID = gen.getInt(1);
+            gen.close();
+            statement.close();
+
+            statement = mConnection.prepareStatement("INSERT INTO Employee (name, surname, salary, Contact_contactID) VALUES (?, ?, ?, ?);");
+            statement.setString(1, employee.getName());
+            statement.setString(2, employee.getSurname());
+            statement.setDouble(3, employee.getSalary());
+            statement.setInt(4, contactID);
+            statement.executeUpdate();
+            statement.close();
+
+        } catch (Exception e) {
+            LOG.info("Something went wrong...");
+            e.printStackTrace();
+        }
     }
 
     public void updateEmployee(Employee employee) {

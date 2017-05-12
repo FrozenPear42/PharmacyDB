@@ -182,7 +182,9 @@ public class DatabaseConnector {
     public void addEmployee(Employee employee) {
         try {
 
-            PreparedStatement statement = mConnection.prepareStatement("INSERT INTO Contact (email, phoneNumber, street, city, zipCode) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = mConnection.prepareStatement(
+                    "INSERT INTO Contact (email, phoneNumber, street, city, zipCode) " +
+                            "VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, employee.getContact().getEmail());
             statement.setString(2, employee.getContact().getPhoneNumber());
             statement.setString(3, employee.getContact().getStreet());
@@ -196,7 +198,8 @@ public class DatabaseConnector {
             gen.close();
             statement.close();
 
-            statement = mConnection.prepareStatement("INSERT INTO Employee (name, surname, salary, Contact_contactID) VALUES (?, ?, ?, ?);");
+            statement = mConnection.prepareStatement("INSERT INTO Employee (name, surname, salary, Contact_contactID)" +
+                    " VALUES (?, ?, ?, ?);");
             statement.setString(1, employee.getName());
             statement.setString(2, employee.getSurname());
             statement.setDouble(3, employee.getSalary());

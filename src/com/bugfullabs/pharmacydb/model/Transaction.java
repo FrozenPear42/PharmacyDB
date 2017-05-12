@@ -35,8 +35,8 @@ public class Transaction {
         return mTransactionID;
     }
 
-    public List<Medication> getMedications() {
-        return mMedications;
+    public double getTotal() {
+        return mTotal;
     }
 
     public Date getDate() {
@@ -47,15 +47,15 @@ public class Transaction {
         return mPaymentMethod;
     }
 
-    public int getQuantityOf(Medication medication) {
-        return mMedicationQuantity.get(medication);
-    }
-
-    public double getTotal() {
-        return mTotal;
+    public List<Medication> getMedications() {
+        return mMedications;
     }
 
     public Map<Medication, Integer> getMedicationsQuantity() {
         return mMedicationQuantity;
+    }
+
+    public int getQuantityOf(Medication medication) {
+        return mMedicationQuantity.get(medication);
     }
 }

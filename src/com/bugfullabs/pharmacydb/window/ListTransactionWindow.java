@@ -41,12 +41,13 @@ public class ListTransactionWindow {
         transactionTableView.getColumns().add(idColumn);
 
         TableColumn<Transaction, String> dateColumn = new TableColumn<>("Date");
-        dateColumn.setCellValueFactory(p -> new SimpleStringProperty(new SimpleDateFormat("yyyy-MM-dd")
-                .format(p.getValue().getDate())));
+        dateColumn.setCellValueFactory(p -> new SimpleStringProperty(
+                new SimpleDateFormat("yyyy-MM-dd").format(p.getValue().getDate())));
         transactionTableView.getColumns().add(dateColumn);
 
         TableColumn<Transaction, String> totalColumn = new TableColumn<>("Total");
-        totalColumn.setCellValueFactory(p -> new SimpleStringProperty(new DecimalFormat("#.00").format(p.getValue().getTotal())));
+        totalColumn.setCellValueFactory(p -> new SimpleStringProperty(
+                new DecimalFormat("#.00").format(p.getValue().getTotal())));
         transactionTableView.getColumns().add(totalColumn);
 
         TableColumn<Transaction, String> paymentColumn = new TableColumn<>("Payment");

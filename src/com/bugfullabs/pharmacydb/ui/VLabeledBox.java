@@ -16,7 +16,7 @@ public class VLabeledBox extends VBox {
         setPadding(new Insets(5));
         mText = text;
         mLabel = new Label(mText + ": ");
-        mLabel.setStyle("-fx-font-size: 1.1em; -fx-font-weight: 600px");
+        mLabel.setStyle("-fx-font-size: 1.1em;");
         getChildren().addAll(mLabel, node);
     }
 
